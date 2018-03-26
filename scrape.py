@@ -8,43 +8,46 @@ import logging # not to be used for deforestation
 import pprint # pretty printing!
 import re # since we have pretty printing, we may as well have ugly regex too
 
-PL_STAT_SKATER = 'skater'
-PL_STAT_GOALIE = 'goalie'
+PL_STATS_SKATER = 'skater'
+PL_STATS_GOALIE = 'goalie'
 
+PL_STATS_INIT = {}
 # use to initialize stats fields for skaters
-PL_STATS_INIT[PL_STAT_SKATER] = {
-    "PIMS":0,
-    "Goals":0,
-    "Assists":0,
-    "OT Goals":0,
-    "OT Assists":0
+PL_STATS_INIT[PL_STATS_SKATER] = {               \
+    "PIMS":0,                                   \
+    "Goals":0,                                  \
+    "Assists":0,                                \
+    "OT Goals":0,                               \
+    "OT Assists":0                              \
 }
 
 # use to initialize stats fields for goalies
-PL_STATS_INIT[PL_STATS_GOALIE] = { 
-    "PIMS":0, # we don't currently score goalie PIM in The People's League
-    "Starts":0, # not counted towards points in The People's League
-    "Reg W":0,
-    "OT W":0,
-    "Reg SO":0,
-    "OT SO":0,
-    "OT L":0,
-    "Reg L":0 # not counted towards points in The People's League
+PL_STATS_INIT[PL_STATS_GOALIE] = {              \
+    "PIMS":0,                                   \
+    "Starts":0,                                 \
+    "Reg W":0,                                  \
+    "OT W":0,                                   \
+    "Reg SO":0,                                 \
+    "OT SO":0,                                  \
+    "OT L":0,                                   \
+    "Reg L":0                                   \
 }
 
 LOGFILE = "peoples.log" # [TODO] make path absolute
 BOXSCORE_URL = "https://www.hockey-reference.com/boxscores"
 
+regex_start = {}
+regex_end = {}
 # the skater stats table starts with all_<3-letter team abbreviation>_skaters
 # and ends with a line with total stats, containing TOTAL
-regex_start[PL_STAT_SKATER] = re.compile("id=\"all_[A-Z]{3}_skaters")
-regex_end[PL_STAT_SKATER] = re.compile("TOTAL")
+regex_start[PL_STATS_SKATER] = re.compile("id=\"all_[A-Z]{3}_skaters")
+regex_end[PL_STATS_SKATER] = re.compile("TOTAL")
 
 # in hockey-reference.com's infinite wisdom, they keep track of TOTAL stats
 # for skaters, but not for goalies, so just use the </table> end tag to
 # find the end
-regex_start[PL_STAT_GOALIE] = re.compile("id=\"all_[A-Z]{3}_goalies")
-regex_end[PL_STAT_GOALIE] = re.compile("/table")
+regex_start[PL_STATS_GOALIE] = re.compile("id=\"all_[A-Z]{3}_goalies")
+regex_end[PL_STATS_GOALIE] = re.compile("/table")
 
 logging.basicConfig(filename=LOGFILE, level=logging.INFO)
 pp = pprint.PrettyPrinter(indent=4)
@@ -265,7 +268,7 @@ def parse_player_stats(html, stat_type):
     # determining goalie stats in The People's League based on the info
     # we can scrape from hockey-reference.com is a pain in the ass in terms
     # of figuring out a generic processes
-    elif stat_type == PL_STAT_GOALIE:
+    elif stat_type == PL_STATS_GOALIE:
         # [TODO] implement a generic solution for goalies.  for now,
         # let's just get a hack that works.
         scores = extract_game_score(html) # gives us {name, score} for team name
@@ -279,7 +282,7 @@ def parse_player_stats(html, stat_type):
             if ot == 0:
                 if so == 0:
                     stats[k[winner]]["Reg W"] = 1
-                else
+                else:
                     stats[k[winner]]["Reg SO"] = 1
                 stats[k[abs(winner-1)]]['Reg L'] = 1 # record Reg loss
             else:
@@ -330,7 +333,7 @@ def parse_goalie_stats(html):
 
 def parse_boxscore(url):
     html = make_request(url)
-    stats = parse_skater_stats(html)
+    stats = parse_player_stats(html, PL_STATS_SKATER)
     pprint.pprint(stats)
 
 

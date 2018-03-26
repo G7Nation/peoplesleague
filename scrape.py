@@ -241,8 +241,6 @@ def parse_player_stats(html, stat_type):
                 stats[name] = PL_STATS_INIT[stat_type]
                 stats[name]["PIMS"] = pim # penalty minutes are universal
 
-                #log_info("Added to stats", (name, stats[name]))
-
     # we need to parse scoring summary for both skaters and goalies since
     # it's the only way we can distinguish regulation time from overtime
     # points
@@ -251,19 +249,19 @@ def parse_player_stats(html, stat_type):
     # fill in goals/assists stats for skaters
     # [TODO]  move player-type-specific stat recording to separate function
     # accessible by indexing into a dict
-    if stat_type == PL_STAT_SKATER:
+    if stat_type == PL_STATS_SKATER:
         for goal in goals:
-            if goal['ot'] == 0:
-                stats[goal['name']['Goals']] += 1
+            if goal["ot"] == 0:
+                stats[goal["name"]]["Goals"] += 1
             else:
                 ot = 1 # game decided in OT.  need this for goalie stats
-                stats[goal['name']['OT Goals']] += 1
+                stats[goal["name"]]["OT Goals"] += 1
 
         for assist in assists:
-            if assist['ot'] == 0:
-                stats[assist['name']['Assists']] += 1
+            if assist["ot"] == 0:
+                stats[assist["name"]]["Assists"] += 1
             else:
-                stats[assist['name']['OT Assists']] += 1
+                stats[assist["name"]]["OT Assists"] += 1
 
     # determining goalie stats in The People's League based on the info
     # we can scrape from hockey-reference.com is a pain in the ass in terms
